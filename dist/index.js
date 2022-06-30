@@ -44,7 +44,7 @@ async function run() {
     console.log(`💬 found total of ${workflows.length} workflow(s)`);
     for (const workflow of workflows) {
       core.debug(`Workflow: ${workflow.name} ${workflow.id} ${workflow.state}`);
-      let del_runs = new Array();
+      let DeleteWorkflows = new Array();
       let Skip_runs = new Array();
       // Execute the API "List workflow runs for a repository", see 'https://octokit.github.io/rest.js/v18#actions-list-workflow-runs-for-repo'
       const runs = await octokit
@@ -65,25 +65,25 @@ async function run() {
         const ELAPSE_days = ELAPSE_ms / (1000 * 3600 * 24);
         if (ELAPSE_days >= retain_days) {
           core.debug(`  Added to del list '${workflow.name}' workflow run ${run.id}`);
-          del_runs.push(run);
+          DeleteWorkflows.push(run);
         }
         else {
           console.log(`👻 Skipped '${workflow.name}' workflow run ${run.id}: created at ${run.created_at}`);
         }
       }
-      core.debug(`Delete list for '${workflow.name}' is ${del_runs.length} items`);
-      const arr_length = del_runs.length - keep_minimum_runs;
+      core.debug(`Delete list for '${workflow.name}' is ${DeleteWorkflows.length} items`);
+      const arr_length = DeleteWorkflows.length - keep_minimum_runs;
       if (arr_length > 0) {
-        del_runs = del_runs.sort((a, b) => { return a.id - b.id; });
+        DeleteWorkflows = DeleteWorkflows.sort((a, b) => { return a.id - b.id; });
         if (keep_minimum_runs !== 0) {
-          Skip_runs = del_runs.slice(-keep_minimum_runs);
-          del_runs = del_runs.slice(0, -keep_minimum_runs);
+          Skip_runs = DeleteWorkflows.slice(-keep_minimum_runs);
+          DeleteWorkflows = DeleteWorkflows.slice(0, -keep_minimum_runs);
           for (const Skipped of Skip_runs) {
             console.log(`👻 Skipped '${workflow.name}' workflow run ${Skipped.id}: created at ${Skipped.created_at}`);
           }
         }
-        core.debug(`Deleting ${del_runs.length} runs for '${workflow.name}' workflow`);
-        for (const del of del_runs) {
+        core.debug(`Deleting ${DeleteWorkflows.length} runs for '${workflow.name}' workflow`);
+        for (const del of DeleteWorkflows) {
           core.debug(`Deleting '${workflow.name}' workflow run ${del.id}`);
           // Execute the API "Delete a workflow run", see 'https://octokit.github.io/rest.js/v18#actions-delete-workflow-run'
 
